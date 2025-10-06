@@ -1,81 +1,54 @@
-const startBtn = document.getElementById("btnStart");
-const responseText = document.getElementById("responseText");
-const canvas = document.getElementById("wave");
-const ctx = canvas.getContext("2d");
+const button = document.getElementById("talk-btn");
+const statusEl = document.getElementById("status");
+const responseBox = document.getElementById("response-box");
 
-// إعداد الموجات الصوتية
-navigator.mediaDevices.getUserMedia({ audio: true })
-  .then(stream => {
-    const audioContext = new AudioContext();
-    const source = audioContext.createMediaStreamSource(stream);
-    const analyser = audioContext.createAnalyser();
-    source.connect(analyser);
-    analyser.fftSize = 64;
+let isListening = false;
+let recognition;
 
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
+if ('webkitSpeechRecognition' in window) {
+  recognition = new webkitSpeechRecognition();
+  recognition.lang = "ar-SA";
+  recognition.continuous = false;
+  recognition.interimResults = false;
 
-    function drawWave() {
-      requestAnimationFrame(drawWave);
-      analyser.getByteFrequencyData(dataArray);
+  recognition.onstart = () => {
+    isListening = true;
+    statusEl.textContent = "🎧 جاري الاستماع...";
+    document.querySelector(".mouth").style.animation = "speak 0.5s infinite";
+  };
 
-      ctx.fillStyle = "rgba(0,0,0,0.1)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+  recognition.onend = () => {
+    isListening = false;
+    statusEl.textContent = "🤖 جاري التفكير...";
+    document.querySelector(".mouth").style.animation = "";
+  };
 
-      const barWidth = (canvas.width / bufferLength) * 2.5;
-      let x = 0;
-      for (let i = 0; i < bufferLength; i++) {
-        const barHeight = dataArray[i] / 2;
-        ctx.fillStyle = `rgb(${barHeight + 100},200,255)`;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
-        x += barWidth + 1;
-      }
-    }
-    drawWave();
+  recognition.onresult = async (event) => {
+    const text = event.results[0][0].transcript;
+    statusEl.textContent = "💭 جاري المعالجة...";
+    const response = await fetch("/process_audio", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+    const data = await response.json();
+    responseBox.textContent = data.reply;
+    responseBox.style.display = "block";
+    statusEl.textContent = "✅ الرد جاهز!";
+    speak(data.reply);
+  };
+}
 
-    // ======== وظيفة الضغط على زر "تحدث الآن" ========
-    startBtn.onclick = () => {
-      const mediaRecorder = new MediaRecorder(stream);
-      const audioChunks = [];
+button.onclick = () => {
+  if (!isListening) {
+    recognition.start();
+  } else {
+    recognition.stop();
+  }
+};
 
-      mediaRecorder.ondataavailable = event => {
-        audioChunks.push(event.data);
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-        const formData = new FormData();
-        formData.append("audio", audioBlob);
-
-        responseText.textContent = "⏳ جاري التحليل والرد...";
-
-        fetch("/voice", { method: "POST", body: formData })
-          .then(res => res.json())
-          .then(data => {
-            responseText.textContent = data.reply;
-
-            // تشغيل الصوت باستخدام SpeechSynthesis بناءً على اللغة المكتشفة
-            const utter = new SpeechSynthesisUtterance(data.reply);
-            utter.lang = data.lang === "ar" ? "ar-SA" : "en-US";
-            speechSynthesis.speak(utter);
-          })
-          .catch(err => {
-            console.error(err);
-            responseText.textContent = "❌ حدث خطأ في التواصل مع الخادم.";
-          });
-      };
-
-      // بدء التسجيل
-      mediaRecorder.start();
-      responseText.textContent = "🎙️ استمع الآن...";
-
-      // وقف التسجيل بعد 4 ثواني أو يمكنك تعديل الوقت
-      setTimeout(() => {
-        mediaRecorder.stop();
-      }, 4000);
-    };
-  })
-  .catch(err => {
-    console.error("Error accessing microphone:", err);
-    responseText.textContent = "❌ لم يتمكن المتصفح من الوصول إلى الميكروفون.";
-  });
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "ar-SA";
+  speechSynthesis.speak(utterance);
+}

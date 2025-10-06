@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <title>المساعد الصوتي الذكي</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>مساعدك الذكي 🤖</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body dir="rtl">
-  <div class="container">
-    <h1>🎙️ المساعد الصوتي الذكي</h1>
-    <canvas id="wave"></canvas>
-    <div class="controls">
-      <button id="btnStart">🎤 تحدث الآن</button>
+<body>
+    <div class="container">
+        <div class="robot">
+            <div class="eyes">
+                <div class="eye"></div>
+                <div class="eye"></div>
+            </div>
+            <div class="mouth"></div>
+        </div>
+
+        <div class="status" id="status">🎤 اضغط للتحدث...</div>
+        <button id="talk-btn" class="talk-button">🎙️ بدء المحادثة</button>
+
+        <div id="response-box" class="response-box"></div>
     </div>
-    <p id="responseText">في انتظارك...</p>
-    <audio id="audioPlayer" controls hidden></audio>
-  </div>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

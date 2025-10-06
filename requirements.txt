@@ -1,7 +1,8 @@
-Flask
+flask
+openai
 SpeechRecognition
 gTTS
 pygame
-openai
 numpy
 sounddevice
+gunicorn
