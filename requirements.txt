@@ -1,7 +1,0 @@
-Flask
-SpeechRecognition
-gTTS
-pygame
-openai
-numpy
-sounddevice
