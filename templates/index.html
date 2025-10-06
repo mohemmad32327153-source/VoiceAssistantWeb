@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>المساعد الصوتي الذكي</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body dir="rtl">
+  <div class="container">
+    <h1>🎙️ المساعد الصوتي الذكي</h1>
+    <canvas id="wave"></canvas>
+    <div class="controls">
+      <button id="btnStart">🎤 تحدث الآن</button>
+    </div>
+    <p id="responseText">في انتظارك...</p>
+    <audio id="audioPlayer" controls hidden></audio>
+  </div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

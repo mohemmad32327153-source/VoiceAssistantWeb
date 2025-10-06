@@ -1,0 +1,5 @@
+Flask==2.3.2
+speechrecognition==3.8.1
+gTTS==2.4.7
+openai>=1.0.0
+numpy==1.26.0
