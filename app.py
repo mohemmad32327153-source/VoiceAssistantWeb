@@ -11,20 +11,24 @@ def index():
 
 @app.route("/process_audio", methods=["POST"])
 def process_audio():
-    data = request.get_json()
-    user_text = data.get("text", "")
+    data = request.get_json(force=True)
+    user_text = data.get("text", "").strip()
+
+    if not user_text:
+        return jsonify({"reply": "لم أسمعك جيدًا، حاول مرة أخرى."})
+
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "أنت مساعد صوتي ذكي ومهذب"},
+                {"role": "system", "content": "أنت المساعد الصوتي إيلاف، لطيف ومهذب وترد بإيجاز."},
                 {"role": "user", "content": user_text}
             ]
         )
         reply = response.choices[0].message.content
         return jsonify({"reply": reply})
     except Exception as e:
-        return jsonify({"reply": f"حدث خطأ: {e}"})
+        return jsonify({"reply": f"حدث خطأ في المعالجة: {e}"})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
