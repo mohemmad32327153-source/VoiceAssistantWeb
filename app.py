@@ -21,7 +21,7 @@ def process_audio():
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "أنت المساعد الصوتي إيلاف، لطيف ومهذب وترد بإيجاز."},
+                {"role": "system", "content": "أنت المساعد الصوتي إيلاف، صوتك لطيف وهادئ وترد بطريقة أنيقة ومهذبة."},
                 {"role": "user", "content": user_text}
             ]
         )

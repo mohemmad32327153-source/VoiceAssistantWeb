@@ -1,57 +1,61 @@
-const button = document.getElementById("talk-btn");
 const statusEl = document.getElementById("status");
 const responseBox = document.getElementById("response-box");
-const mouth = document.querySelector(".mouth");
+const toggleBtn = document.getElementById("toggle-speech");
 
 let isListening = false;
+let isSpeechEnabled = true;
 let recognition;
 
 if ('webkitSpeechRecognition' in window) {
   recognition = new webkitSpeechRecognition();
-  recognition.lang = "ar-SA";
-  recognition.continuous = false;
+  recognition.lang = "ar-SA";  // تحسين الصوت العربي
+  recognition.continuous = true; // الاستماع تلقائيًا بدون توقف
   recognition.interimResults = false;
 
   recognition.onstart = () => {
     isListening = true;
     statusEl.textContent = "🎧 جاري الاستماع...";
-    mouth.classList.add("talking");
+    document.querySelector(".mouth").style.animation = "speak 0.5s infinite";
   };
 
   recognition.onend = () => {
     isListening = false;
-    statusEl.textContent = "🤖 جاري التفكير...";
-    mouth.classList.remove("talking");
+    statusEl.textContent = "🤖 جارٍ التفكير...";
+    document.querySelector(".mouth").style.animation = "";
+    // إعادة تشغيل الاستماع تلقائيًا
+    recognition.start();
   };
 
   recognition.onresult = async (event) => {
-    const text = event.results[0][0].transcript;
+    const text = event.results[event.results.length - 1][0].transcript;
     statusEl.textContent = "💭 جاري المعالجة...";
-    mouth.classList.remove("talking");
-
     const response = await fetch("/process_audio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text })
     });
-
     const data = await response.json();
     responseBox.textContent = data.reply;
     responseBox.style.display = "block";
-    statusEl.textContent = "✅ إيلاف: " + data.reply;
-    speak(data.reply);
+    statusEl.textContent = "✅ الرد جاهز!";
+
+    if (isSpeechEnabled) speak(data.reply);
   };
+
+  // بدء الاستماع تلقائيًا عند فتح الصفحة
+  recognition.start();
 }
 
-button.onclick = () => {
-  if (!isListening) recognition.start();
-  else recognition.stop();
+// وظيفة تشغيل وإيقاف الصوت
+toggleBtn.onclick = () => {
+  isSpeechEnabled = !isSpeechEnabled;
+  toggleBtn.textContent = isSpeechEnabled ? "🔊 تشغيل/إيقاف الصوت" : "🔇 الصوت متوقف";
 };
 
+// دالة نطق النص
 function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "ar-SA";
-  mouth.classList.add("talking");
-  utterance.onend = () => mouth.classList.remove("talking");
+  utterance.lang = "ar-SA"; // صوت عربي واضح
+  utterance.rate = 1;       // سرعة الكلام
   speechSynthesis.speak(utterance);
 }

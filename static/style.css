@@ -1,5 +1,5 @@
 body {
-  background: radial-gradient(circle at center, #000014, #000);
+  background-color: #0a0a0a;
   color: white;
   font-family: "Cairo", sans-serif;
   display: flex;
@@ -14,20 +14,21 @@ body {
 }
 
 .robot {
-  position: relative;
-  width: 220px;
-  height: 220px;
-  background: linear-gradient(145deg, #0f2027, #203a43, #2c5364);
+  background-color: #111;
   border-radius: 50%;
+  width: 200px;
+  height: 200px;
+  margin: 20px auto;
+  position: relative;
   box-shadow: 0 0 40px #00bfff;
-  margin-bottom: 20px;
+  transition: 0.3s ease;
 }
 
 .eyes {
   display: flex;
   justify-content: space-between;
   position: absolute;
-  top: 70px;
+  top: 60px;
   left: 40px;
   right: 40px;
 }
@@ -35,15 +36,15 @@ body {
 .eye {
   width: 40px;
   height: 40px;
-  background-color: #00e6ff;
+  background-color: #00bfff;
   border-radius: 50%;
-  box-shadow: 0 0 25px #00ffff;
+  box-shadow: 0 0 20px #00bfff;
   animation: blink 3s infinite;
 }
 
 @keyframes blink {
   0%, 90%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.1); }
+  95% { transform: scaleY(0.2); }
 }
 
 .mouth {
@@ -55,47 +56,43 @@ body {
   height: 20px;
   background-color: #00bfff;
   border-radius: 10px;
-  box-shadow: 0 0 30px #00bfff;
+  animation: speak 1.5s infinite;
 }
 
-.talking {
-  animation: talk 0.3s infinite;
-}
-
-@keyframes talk {
+@keyframes speak {
   0%, 100% { height: 20px; }
   50% { height: 40px; }
 }
 
-.talk-button {
-  padding: 15px 30px;
-  font-size: 18px;
+.control-button {
+  padding: 12px 25px;
+  font-size: 16px;
   border: none;
-  border-radius: 30px;
+  border-radius: 25px;
   background-color: #00bfff;
   color: white;
   cursor: pointer;
   transition: 0.3s;
+  margin: 10px;
 }
 
-.talk-button:hover {
-  background-color: #0090ff;
+.control-button:hover {
+  background-color: #0080ff;
 }
 
 .status {
   margin-top: 10px;
-  font-size: 20px;
+  font-size: 18px;
   color: #ccc;
 }
 
 .response-box {
   margin-top: 20px;
-  background-color: #111;
+  background-color: #222;
   padding: 15px;
   border-radius: 10px;
   max-width: 400px;
   margin-left: auto;
   margin-right: auto;
   display: none;
-  line-height: 1.6;
 }

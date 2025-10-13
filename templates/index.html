@@ -2,12 +2,12 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>إيلاف - مساعدك الذكي 🤖</title>
+  <title>إيلاف - المساعد الصوتي الذكي</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <div class="container">
-    <div class="robot">
+    <div id="robot" class="robot">
       <div class="eyes">
         <div class="eye"></div>
         <div class="eye"></div>
@@ -15,11 +15,94 @@
       <div class="mouth"></div>
     </div>
 
-    <div class="status" id="status">🎤 اضغط للتحدث...</div>
-    <button id="talk-btn" class="talk-button">🎙️ بدء المحادثة</button>
     <div id="response-box" class="response-box"></div>
+
+    <button id="toggle-speech" class="control-button">🔊 تشغيل/إيقاف الصوت</button>
+    <button id="toggle-display" class="control-button">📝 إظهار النص بدلاً من الوجه</button>
+    <div id="status" class="status">🎤 جاري التهيئة...</div>
   </div>
 
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script>
+    const statusEl = document.getElementById("status");
+    const responseBox = document.getElementById("response-box");
+    const robot = document.getElementById("robot");
+    const toggleSpeechBtn = document.getElementById("toggle-speech");
+    const toggleDisplayBtn = document.getElementById("toggle-display");
+
+    let isListening = false;
+    let isSpeechEnabled = true;
+    let showTextMode = false;
+    let recognition;
+
+    // 🔊 إعداد الاستماع التلقائي
+    if ('webkitSpeechRecognition' in window) {
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = "ar-SA";
+      recognition.continuous = true;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        isListening = true;
+        statusEl.textContent = "🎧 إيلاف تستمع إليك...";
+        document.querySelector(".mouth").style.animation = "speak 0.5s infinite";
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        statusEl.textContent = "🔄 جاري إعادة التشغيل...";
+        document.querySelector(".mouth").style.animation = "";
+        recognition.start(); // إعادة التشغيل التلقائي
+      };
+
+      recognition.onresult = async (event) => {
+        const text = event.results[event.results.length - 1][0].transcript;
+        statusEl.textContent = "💭 جاري المعالجة...";
+        const response = await fetch("/process_audio", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+        const data = await response.json();
+        responseBox.textContent = data.reply;
+        responseBox.style.display = "block";
+        statusEl.textContent = "✅ الرد جاهز!";
+
+        if (isSpeechEnabled && !showTextMode) speak(data.reply);
+      };
+
+      // 🔁 التشغيل التلقائي عند تحميل الصفحة
+      recognition.start();
+    }
+
+    // 🎛️ زر تشغيل/إيقاف الصوت
+    toggleSpeechBtn.onclick = () => {
+      isSpeechEnabled = !isSpeechEnabled;
+      toggleSpeechBtn.textContent = isSpeechEnabled ? "🔊 تشغيل/إيقاف الصوت" : "🔇 الصوت متوقف";
+    };
+
+    // 📝 زر تبديل الواجهة بين الوجه والنص
+    toggleDisplayBtn.onclick = () => {
+      showTextMode = !showTextMode;
+      if (showTextMode) {
+        robot.style.display = "none";
+        responseBox.style.display = "block";
+        toggleDisplayBtn.textContent = "🤖 إظهار الوجه";
+      } else {
+        robot.style.display = "block";
+        toggleDisplayBtn.textContent = "📝 إظهار النص";
+      }
+    };
+
+    // 🎤 نطق الصوت بنبرة مثالية
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "ar-SA";
+      utterance.rate = 1;
+      utterance.pitch = 1.2; // نبرة مثالية
+      utterance.volume = 1;
+      utterance.voice = speechSynthesis.getVoices().find(v => v.name.includes("Microsoft") || v.lang === "ar-SA");
+      speechSynthesis.speak(utterance);
+    }
+  </script>
 </body>
 </html>
